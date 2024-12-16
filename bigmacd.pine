@@ -1,0 +1,26 @@
+//@version=6
+indicator('BIG MACD', overlay = true)
+
+source = input.source(close, "Source")
+var int fastlen = input.int(12, "MACD Fast Length")
+var int slowlen = input.int(26, "MACD Slow Length")
+var int signallen = input.int(9, "MACD Signal Length")
+var int tfEMALen = input.int(200, "Trend Filter EMA Length")
+// MACD calculation with default settings
+[macdLine, signalLine, histLine] = ta.macd(source, fastlen, slowlen, signallen)
+tfEMA = ta.ema(source, tfEMALen) //Trend Filter Moving Average
+
+// Define conditions for buy and sell signals
+buySignal = ta.crossover(macdLine, signalLine) and (macdLine > 0 and signalLine > 0) and (histLine > 0) and (close > tfEMA and open > tfEMA and high > tfEMA and low > tfEMA)
+sellSignal = ta.crossunder(macdLine, signalLine) and (macdLine < 0 and signalLine < 0) and (histLine < 0) and (close < tfEMA and open < tfEMA and high < tfEMA and low < tfEMA)
+
+// Plotting buy and sell labels on the chart
+plotshape(buySignal, title = 'Buy Signal', location = location.belowbar, color = color.green, style = shape.labelup, text = 'BUY', textcolor = color.white)
+plotshape(sellSignal, title = 'Sell Signal', location = location.abovebar, color = color.red, style = shape.labeldown, text = 'SELL', textcolor = color.white)
+
+alertcondition(buySignal or sellSignal, "BIG MACD SIGNAL", "BUY - SELL")
+
+// Optional: Plotting MACD and Signal lines on the chart (not overlay)
+// You can uncomment these if you want to see MACD on a separate chart below the price chart
+//plot(macdLine, color=color.blue, title="MACD Line")
+//plot(signalLine, color=color.orange, title="Signal Line")
